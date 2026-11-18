@@ -1,10 +1,10 @@
 import { createContext, useContext, useRef, useState } from 'react';
 import { Lock } from 'lucide-react';
+import { ADMIN } from '../config/admin';
 
 const Ctx = createContext(null);
 export const usePin = () => useContext(Ctx);
-const KEY = 'terco.pin';
-const ler = () => { try { return JSON.parse(localStorage.getItem(KEY)); } catch { return null; } };
+try { localStorage.removeItem('terco.pin'); } catch { /* PIN local antigo não é mais usado */ }
 
 async function hash(pin, salt) {
   const txt = `${salt}:${pin}`;
@@ -17,43 +17,36 @@ async function hash(pin, salt) {
 }
 
 export function PinProvider({ children }) {
-  const [dados, setDados] = useState(ler);
   const [modal, setModal] = useState(null);
   const [valor, setValor] = useState('');
   const [erro, setErro] = useState('');
   const falhas = useRef(0), bloqueio = useRef(0);
 
   const fechar = (ok) => { modal?.resolve(ok); setModal(null); setValor(''); setErro(''); };
-  const pedir = () => (!dados ? Promise.resolve(true) : new Promise((resolve) => setModal({ resolve })));
-  const definir = async (pin) => {
-    const salt = Math.random().toString(36).slice(2);
-    const d = { salt, hash: await hash(pin, salt) };
-    localStorage.setItem(KEY, JSON.stringify(d)); setDados(d);
-  };
-  const remover = () => { localStorage.removeItem(KEY); setDados(null); };
+  const pedir = () => (!ADMIN ? Promise.resolve(true) : new Promise((resolve) => setModal({ resolve })));
 
   async function confirmar(e) {
     e.preventDefault();
     if (Date.now() < bloqueio.current) return setErro('Muitas tentativas. Aguarde 30 segundos.');
-    if ((await hash(valor, dados.salt)) === dados.hash) { falhas.current = 0; return fechar(true); }
+    if ((await hash(valor, ADMIN.salt)) === ADMIN.hash) { falhas.current = 0; return fechar(true); }
     falhas.current += 1; setValor('');
     if (falhas.current >= 5) { falhas.current = 0; bloqueio.current = Date.now() + 30000; setErro('Muitas tentativas. Aguarde 30 segundos.'); }
     else setErro('PIN incorreto.');
   }
 
   return (
-    <Ctx.Provider value={{ temPin: !!dados, pedir, definir, remover }}>
+    <Ctx.Provider value={{ temPin: !!ADMIN, pedir }}>
       {children}
       {modal && (
         <div className="modal" role="dialog" aria-modal="true" aria-label="PIN de administrador">
           <form className="card" onSubmit={confirmar}>
             <h2><Lock size={18} /> PIN de administrador</h2>
-            <input type="password" inputMode="numeric" autoComplete="off" maxLength={6} autoFocus value={valor}
-              onChange={(e) => { setValor(e.target.value.replace(/\D/g, '')); setErro(''); }} placeholder="Digite o PIN" />
+            <input type="password" autoComplete="off" maxLength={30} autoFocus value={valor}
+              onChange={(e) => { setValor(e.target.value); setErro(''); }} placeholder="Digite o PIN" />
             {erro && <p className="msg err">{erro}</p>}
             <div className="actions">
               <button type="button" onClick={() => fechar(false)}>Cancelar</button>
-              <button type="submit" className="primary" disabled={valor.length < 4}>Confirmar</button>
+              <button type="submit" className="primary" disabled={!valor}>Confirmar</button>
             </div>
           </form>
         </div>)}

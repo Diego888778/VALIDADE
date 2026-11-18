@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gerar PIN de administrador</title>
+<style>body{font-family:system-ui,sans-serif;max-width:560px;margin:40px auto;padding:0 16px;line-height:1.5}input,button,textarea{font:inherit;padding:10px;width:100%;margin:6px 0;box-sizing:border-box}button{cursor:pointer;font-weight:600}textarea{height:90px;font-family:monospace;font-size:.85rem}</style></head>
+<body>
+<h1>Gerar PIN de administrador</h1>
+<p>Digite o PIN que só você vai conhecer (use 6 ou mais caracteres, misturando letras e números). Este arquivo roda no seu computador e não envia nada para a internet.</p>
+<input id="p" type="password" placeholder="Seu PIN" autocomplete="off">
+<button id="g">Gerar</button>
+<p>Copie o resultado e cole no arquivo <b>src/config/admin.js</b>, no lugar de <code>export const ADMIN = null;</code></p>
+<textarea id="o" readonly></textarea>
+<script>
+document.getElementById('g').onclick=async function(){
+ var pin=document.getElementById('p').value,o=document.getElementById('o');
+ if(pin.length<4){o.value='Use ao menos 4 caracteres.';return}
+ if(!window.crypto||!crypto.subtle){o.value='Abra este arquivo no Chrome ou Edge.';return}
+ var s=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+ var b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s+':'+pin));
+ var h=Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,'0')}).join('');
+ o.value="export const ADMIN = { salt: '"+s+"', hash: '"+h+"' };";
+};
+</script></body></html>
