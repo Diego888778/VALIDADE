@@ -26,4 +26,9 @@ describe('terço de validade', () => {
     expect(c('2026-01-01', '2026-04-01', '2026-02-01', 200 / 3).status).toBe('reprovado');
     expect(c('2026-01-01', '2026-04-01', '2026-01-31', 200 / 3).status).toBe('aprovado');
   });
+  it('dias mínimos e data limite', () => {
+    const r = c('2026-01-01', '2026-04-01', '2026-02-01');
+    expect(r.minDias).toBe(30); expect(r.margem).toBe(29); expect(r.limite).toBe(parseDate('2026-03-02'));
+    expect(c('2026-09-17', '2026-12-17', '2026-11-17').status).toBe('reprovado'); // 30 de 91 dias
+  });
 });

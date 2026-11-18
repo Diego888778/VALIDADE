@@ -8,6 +8,9 @@ Ferramenta para o recebimento de mercadorias: confere se o produto chega com **n
 - **Aprovado** com ≥ 1/3 restante (exatamente 1/3 é aprovado); **Reprovado** abaixo; **Vencido** se o recebimento passa da validade.
 - A decisão usa dias inteiros, sem arredondar o percentual, e datas civis (sem erro de fuso).
 
+## Instalar no celular (offline)
+Abra o link publicado no Chrome do Android, com internet, e toque em ⋮ → **Instalar app** (ou **Adicionar à tela inicial**). Depois da primeira abertura, o app funciona sem internet e os registros ficam salvos no aparelho.
+
 ## Rodar localmente
 Requer Node 18+.
 ```bash

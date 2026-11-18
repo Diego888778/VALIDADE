@@ -17,6 +17,8 @@ export function today() {
   return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
 }
 export const fmtDate = (s) => { const m = RE.exec(s || ''); return m ? `${m[3]}/${m[2]}/${m[1]}` : ''; };
+export const fmtDia = (n) => { const d = new Date(n * 864e5); return `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}/${d.getUTCFullYear()}`; };
+export const fmtDias = (n) => { const r = Math.round(n * 10) / 10; return (Number.isInteger(r) ? String(r) : r.toFixed(1).replace('.', ',')) + (Math.abs(r) === 1 ? ' dia' : ' dias'); };
 export const fmtPct = (n) => n.toFixed(2).replace('.', ',') + '%';
 
 /**
@@ -29,12 +31,9 @@ export function calcTerco({ fabricacao, validade, recebimento }, minimo = UM_TER
   if (v <= f) return { error: 'A validade deve ser posterior à fabricação.' };
   if (r < f) return { error: 'O recebimento não pode ser anterior à fabricação.' };
   const total = v - f, restante = v - r, percentual = (restante / total) * 100;
-  let status;
-  if (restante < 0) status = 'vencido';
-  else {
-    const exatoTerco = Math.abs(minimo - UM_TERCO) < 1e-3;
-    const ok = exatoTerco ? restante * 3 >= total : restante * 100 >= minimo * total - 1e-9;
-    status = ok ? 'aprovado' : 'reprovado';
-  }
-  return { total, restante, percentual, status };
+  // Dias mínimos que devem restar (1/3 do prazo total, ou o percentual configurado).
+  const minDias = Math.abs(minimo - UM_TERCO) < 1e-3 ? total / 3 : (total * minimo) / 100;
+  const necessarios = Math.ceil(minDias - 1e-9); // restante é inteiro: compara dias com dias
+  const status = restante < 0 ? 'vencido' : restante >= necessarios ? 'aprovado' : 'reprovado';
+  return { total, restante, percentual, status, minDias, margem: restante - minDias, limite: v - necessarios };
 }
