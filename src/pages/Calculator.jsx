@@ -19,6 +19,7 @@ export default function Calculator({ config, setRegistros, onSaved }) {
 
   function salvar() {
     if (!r || r.error) return setMsg(r?.error || 'Preencha as três datas.');
+    if (!confirm('Deseja realmente salvar esta conferência no relatório?')) return;
     const id = Date.now();
     setRegistros((l) => [{ id, produto: '', sku: '', fornecedor: '', nf: '', ...f, total: r.total, restante: r.restante, percentual: r.percentual, status: r.status, minimo: config.minimo, criadoEm: id }, ...l]);
     setF(vazio()); onSaved(id);
