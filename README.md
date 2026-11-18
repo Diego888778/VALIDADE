@@ -36,5 +36,8 @@ git push -u origin main
 2. Build command: `npm run build` · Publish directory: `dist` (o `netlify.toml` já define isso).
 3. **Deploy**. A cada `git push`, o site é atualizado sozinho.
 
+## PIN de administrador
+Em **Ajustes → Administrador** crie um PIN (4 a 6 números). Com ele ativo, excluir registros, exportar (Excel/CSV/PDF) e limpar o relatório pedem o PIN. É uma trava local, guardada no aparelho (não substitui login com servidor). Se esquecer o PIN, é preciso limpar os dados do app no celular, o que também apaga o relatório.
+
 ## Estrutura
 `src/utils/terco.js` (cálculo + testes) · `src/utils/exportar.js` (CSV/Excel/PDF) · `src/pages` · `src/hooks` · `src/styles`
